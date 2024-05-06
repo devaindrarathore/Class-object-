@@ -1,35 +1,94 @@
-Design and Build Objects of types Individual, AU_Employee, Faculty, EN_Faculty and
-Design_Faculty as schematically represented below in Figure-01
-Figure-01
-Class Individual -
-Attributes
-This class must take name as an instance variable and birthday to be of None type
-Functions- get_name, add_birthday , get_age and __str__(Individual)
-Class AU_Employee
-Attributes
-The role of this class is to provide an unique identification for an employee in the Organization
-Functions
-Function- get_unique_id
-Class Faculty
-It inherits everything from the class AU_Employee
-Class EN_Faculty
-Attributes
-This class has to take two data attributes name and classroom_year
-Function
-Assigning class/batch to the Faculty
-Design a new class Roster_AU( )
-The role of this class is to assign faculty a course for given academic term
-Attributes of this class are:
-Empty list consist of Faculty
-Courses assigned to Empty Dictionary
-Functionalities this class must have;
-add_faculty
-“”” Assumes: faculty is of type Faculty add faculty to the empty dictionary created as an object in
-data attributes “””
-Avoid duplicity of Objects in this case
-add_course
-“”” Assumes: Course as a string add courses to the list of courses for faculty ”””
-If faculty not in mapping raise an Error
-get_courses
-“”” Returns a list of courses for a faculty “””
-Finally return sorted list of faculties from the allotted course dictionary
+from datetime import date
+class Individual:
+    def _init_(self, name: str, birthday: str = None):
+        # birthday should be in format -- DD/MM/YYYY
+        self.name = name
+        self.birthday = birthday
+
+    def get_name(self) -> str:
+        return self.name     
+
+    def add_birthday(self, birthday: str):
+        self.birthday = birthday
+
+    def get_age(self) -> int:
+        # 15 06 1999
+        # 02/05/2024
+
+        # (32-15)=17 (16-6)=10 (2023-1999)=24
+
+        today = date.today()
+        birthday_strip = self.birthday.split('/')
+        # birthday_strip = ['15', '06', '1999']
+        day = int(birthday_strip[0])
+        month = int(birthday_strip[1])
+        year = int(birthday_strip[2])
+        birthdate = date(year, month, day)
+        age_in_days = today - birthdate
+        return age_in_days.days // 365
+
+    def _str_(self):
+        return f"Name: {self.name}, Birthday: {self.birthday}"
+
+
+class AU_Employee(Individual):
+    def _init_(self, name: str, birthday: str = None, unique_id: int = None):
+        super()._init_(name, birthday)
+        self.unique_id = unique_id
+
+    def get_unique_id(self):
+        return self.unique_id
+
+
+class Faculty(AU_Employee):
+    pass
+
+
+class EN_Faculty(Faculty):
+    def _init_(self, name: str, birthday: str, classroom_year: int):
+        super()._init_(name, birthday)
+        self.classroom_year = classroom_year
+
+    def assign_class(self, classroom_year: int):
+        self.classroom_year = classroom_year
+
+
+class Roster_AU:
+    def _init_(self):
+        self.faculties = []
+        self.course_mapping = {}
+
+    def add_faculty(self, faculty: Faculty):
+        if faculty not in self.faculties:
+            self.faculties.append(faculty)
+            self.course_mapping[faculty] = []
+
+    def add_course(self, course: str, faculty: Faculty):
+        if faculty not in self.course_mapping:
+            raise ValueError("Faculty not in mapping")
+        self.course_mapping[faculty].append(course)
+
+    def get_courses(self, faculty: Faculty):
+        return self.course_mapping[faculty]
+
+    def get_sorted_faculties_with_courses(self):
+        sorted_faculties = [faculty for faculty in sorted(self.course_mapping.keys(), key=Faculty.get_name)]
+        return sorted_faculties
+
+# Example usage:
+if __name__ == "__main__":
+    
+    faculty1 = EN_Faculty("Devaindra", "15/06/1970", 2022)
+    faculty2 = EN_Faculty("Piyush", "20/05/1985", 2023)
+
+    roster = Roster_AU()
+    roster.add_faculty(faculty1)
+    roster.add_faculty(faculty2)
+
+    roster.add_course("Computer Science", faculty1)
+    roster.add_course("Introduction to computing", faculty1)
+    roster.add_course("Fundamental of programing", faculty2)
+
+    print("Faculties with Courses:")
+    for faculty in roster.get_sorted_faculties_with_courses():
+        print(f"{faculty.get_name()}: {roster.get_courses(faculty)}")
